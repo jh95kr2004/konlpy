@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+import os
 import sys
 
 try:
@@ -24,6 +25,9 @@ attrs = ['tags',        # 품사 태그
          'last_pos',    # 마지막 품사
          'original',    # 원형
          'indexed']     # 인덱스 표현
+
+
+_ENV_MECAB_DICPATH = 'MECAB_DICPATH'
 
 
 def parse(result, allattrs=False, join=False):
@@ -70,11 +74,15 @@ class Mecab():
 
     def __init__(self, dicpath='/usr/local/lib/mecab/dic/mecab-ko-dic'):
         self.dicpath = dicpath
+
+        if _ENV_MECAB_DICPATH in os.environ:
+            self.dicpath = os.environ[_ENV_MECAB_DICPATH]
+
         try:
-            self.tagger = Tagger('-d %s' % dicpath)
+            self.tagger = Tagger('-d %s' % self.dicpath)
             self.tagset = utils.read_json('%s/data/tagset/mecab.json' % utils.installpath)
         except RuntimeError:
-            raise Exception('The MeCab dictionary does not exist at "%s". Is the dictionary correctly installed?\nYou can also try entering the dictionary path when initializing the Mecab class: "Mecab(\'/some/dic/path\')"' % dicpath)
+            raise Exception('The MeCab dictionary does not exist at "%s". Is the dictionary correctly installed?\nYou can also try entering the dictionary path when initializing the Mecab class: "Mecab(\'/some/dic/path\')"' % self.dicpath)
         except NameError:
             raise Exception('Install MeCab in order to use it: http://konlpy.org/en/latest/install/')
 
